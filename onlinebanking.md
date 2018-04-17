@@ -17,8 +17,8 @@ https://instantpay.lianlianpay.com/paymentapi/payment.htm
 |商户编号|oid_partner|是|String(18)|商户编号是商户在连连支付平台上开设的商户 号码，为 18 位数字，如： 201304121000001004 |
 |平台来源|platform|否|String(32)|平台来源能有效区分该交易是从此平台 发起，并能有效定义用户来源。|
 |版本号|api_version|是|String(3)|输入当前版本号1.0|
-|签名|sign|是|String(3)|RSA加密签名，见安全签名机制|
-|签名方式|sign_type|是| String|RSA|
+|签名|sign|是|String|RSA加密签名，见安全签名机制|
+|签名方式|sign_type|是| String(3)|RSA|
 |商户付款流水号|no_order|是|String(32)|商户系统唯一标识该付款的流水号|
 |商户付款时间|dt_order|是|String(14)|格式：YYYYMMDDH24MISS  14 位数字， 精确到秒|
 |付款金额|money_order|是|Number(10 ,2)|付款金额，单位为元，精确到小数点后两位。 如：49.65元 |
@@ -35,11 +35,11 @@ https://instantpay.lianlianpay.com/paymentapi/payment.htm
 |开户支行名称|brabank_name|否|String|对公字段 14家银行可不传 详情请看银行列表 |
 
 
-###### 请求参数采用 json 报文进行，样例如下： 
+###### 请求参数采用 post json 报文进行，样例如下： 
 
 ```html
-curl https://instantpay.lianlianpay.com/paymentapi/payment.htm \
--H "Content-type:application/json;charset=utf-8" \
+curl https://instantpay.lianlianpay.com/paymentapi/payment.htm 
+-H "Content-type:application/json;charset=utf-8" 
 -d '：{
        "acct_name":"全渠道",
        "api_version":"1.0",
@@ -56,7 +56,7 @@ curl https://instantpay.lianlianpay.com/paymentapi/payment.htm \
        "sign_type":"RSA"
 }'
 ```
-###### 请求参数 json 报文加密传输（pay_load 是以上参数 json 加密结果）： 
+###### 请求参数 json 报文加密传输（pay_load 是以上参数 json 加密结果，加密用连连公钥）： 
 ```html
 {
  "oid_partner":"201606221000921503",
@@ -100,6 +100,14 @@ curl https://instantpay.lianlianpay.com/paymentapi/payment.htm \
 "sign_type":"RSA"
 }'
 ```
+###### 需要调用确认付款接口的返回码
+|ret_code|ret_msg|备注说明 |
+|:---|:---|:---|
+|4002|疑似重复提交订单|调用付款申请接口返回 4002 时，请商户先人工审核该订单，确认无误后调用确认付款接口 |
+|4003|收款银行卡和姓名不一致|调用付款申请接口返回 4003 时，请商户先人工审核该订单，确认无误后调用确认付款接口 |
+|4004 |疑似重复提交订单且收款银行卡和姓名不一致 |调用付款申请接口返回 4004 时，请商户先人工审核该订单，确认无误后调用确认付款接口 |
+
+
 ## 确认付款 
 
 ###### 请求地址
@@ -114,13 +122,13 @@ https://instantpay.lianlianpay.com/paymentapi/confirmPayment.htm
 |商户编号|oid_partner|是|String(18)|商户编号是商户在连连支付平台上开设的商户 号码，为 18 位数字，如： 201304121000001004 |
 |平台来源|platform|否|String|平台来源能有效区分该交易是从此平台发起，并能有效定义用户来源。|
 |版本号|api_version|是|String(3)|输入当前版本号1.0|
-|签名|sign|是|String(3)|RSA加密签名，见安全签名机制|
-|签名方式|sign_type|是|String|RSA|
+|签名|sign|是|String|RSA加密签名，见安全签名机制|
+|签名方式|sign_type|是|String(3)|RSA|
 |商户付款流水号|no_order|是|String(32)|商户系统唯一标识该付款的流水号|
 |确认付款验证码|confirm_code|是|String(6)|确认付款验证码，来自付款申请接口返回|
 |服务器异步通知地址|notify_url|是|String(64)|连连支付将付款结果通知商户服务端的地址，建议使用https协议。|
 
-###### 请求参数采用 json 报文进行，样例如下： 
+###### 请求参数采用post json 报文进行，样例如下： 
 ```html
 {
  "api_version":"1.0",
@@ -145,7 +153,7 @@ https://instantpay.lianlianpay.com/paymentapi/confirmPayment.htm
 |:---|:---|:---|:---|:---|
 |交易结果代码|ret_code|是|String(4)|0000 （付款申请确认成功）.|
 |交易结果描述|ret_msg|是|String(100)|交易成功|
-|签名方式|sign_type|是|String|RSA |
+|签名方式|sign_type|是|String(3)|RSA |
 |签名|sign|是|String|RSA加密签名，见安全签名机制|
 |商户编号|oid_partner|是|String(18)|商户编号是商户在连连支付平台上开设的商户号码为18位数字，如 ：201304121000001004 |
 |商户付款流水号|no_order|是|String(32)|商户系统唯一标识该付款的流水号|
@@ -183,12 +191,15 @@ https://instantpay.lianlianpay.com/paymentapi/queryPayment.htm
 |字段说明|字段名|是否必须|类型|描述|
 |:---|:---|:---|:---|:---|
 |商户编号|oid_partner|是|String(18)|商户编号是商户在连连支付平台上开设的商户 号码，为 18 位数字，如： 201304121000001004 |
-|平台来源|platform|否|String(32)|平台来源能有效区分该交易是从此平台 发起，并能有效定义用户来源。|
+|平台来源|platform|否|String(32)|平台来源能有效区分该交易是从此平台发起，并能有效定义用户来源。|
 |版本号|api_version|是|String(3)|输入当前版本号1.0|
-|签名|sign|是|String(3)|RSA加密签名，见安全签名机制|
+|签名|sign|是|String|RSA加密签名，见安全签名机制|
 |签名方式|sign_type|是|String|RSA|
 |商户付款流水号|no_order|是|String(32)|商户系统唯一标识该付款的流水号|
 |连连支付支付单号|oid_paybill|否|String(16)||
+
+###### 请求参数采用post json 报文进行，样例如下：
+
 ```html
 { 
  "oid_partner":"201103171000000000", 
@@ -215,6 +226,8 @@ https://instantpay.lianlianpay.com/paymentapi/queryPayment.htm
 |付款结果|result_pay|是|String|<br/>APPLY 付款申请</br><br/>CHECK 复核申请</br> <br/>SUCCESS 付款成功</br><br/>PROCESSING 付款处理中 </br><br/>CANCEL 付款退款(付款成功后，有可能发生退款)</br> <br/>FAILURE  付款失败</br> <br/>CLOSED  付款关闭 结果以此为准</br>|
 |账务日期|settle_date|否|String(8)|YYYYMMDD|
 |订单描述|info_order|否|String(255)||
+
+###### 返回样例如下：
 ```html
 {   
   "dt_order": "20160728144057",
@@ -238,4 +251,66 @@ https://instantpay.lianlianpay.com/paymentapi/queryPayment.htm
    "sign":"AtkijrjIozoGkA7u7m19mAoWyddXZnTs28t/NSrM80hBD2W6g+uJYTso8yMgA+XApj61YZ93q2NlQ8dyoiLMbwOrsqbx5cODCiFDv8t57c7CMZbzjiFXWqwXY3+Y11AHQtNK0EKAELn8pV58hJURg2JgbjtFPwQ+PT5MOCLzXbE=",
    "sign_type":"RSA"
 }
+```
+## 付款结果通知
+
+连连支付平台对商户的付款请求数据处理完成后，会将处理的结果```result_pay```（付款成功、付款失败，付款退款）通过服务器主动通知的方式通知给商户的通知地址，地址为代付申请接口的 notify_url。通知机制：通知的时间间隔频率为 6 分钟，当通知被商户成功接受后不再通知，总共通知 6 次，如果通知 6 次后也没有被商户接受成功则不再通知，由商户通过付款结果查询接口进行查询确认结果。通知服务通过 post 方式提交给商户服务端，商户服务端通过数据流读写的方法获得通知字符串。 
+
+
+###### 请求参数列表 
+
+|字段说明|字段名|是否必须|类型|描述|
+|:---|:---|:---|:---|:---|
+|商户编号|oid_partner|是|String(18)|商户编号是商户在连连支付平台上开设的商户 号码，为 18 位数字，如： 201304121000001004 |
+|签名|sign|是|String|RSA加密签名，见安全签名机制|
+|签名方式|sign_type|是|String|RSA|
+|商户付款流水号|no_order|是|String(32)|商户系统唯一标识该付款的流水号|
+|商户付款时间|dt_order|是|String(14)|格式：YYYYMMDDH24MISS  14 位数字， 精确到秒 |
+|付款金额|money_order|是|Number(9, 2)|付款金额，单位为元，精确到小数点后两位。 如：49.65元 |
+|连连支付支付单号|oid_paybill|是|String(18)||
+|订单描述|info_order|是|String(255)|该字段通过下划线拼接商户订单描述和付款失败原因，提现付款_通用失败 |
+|付款状态|result_pay|是|String|<br/>SUCCESS 付款成功</br> <br/>FAILURE  付款失败</br> <br/>CANCEL  付款退款</br>（付款成功后，有可能会发生退款） 结果以此为准|
+###### 请求参数采用 json 报文进行，样例如下： 
+```html
+{ 
+ "oid_partner":"201103171000000000", 
+ "dt_order":"20130515094018", 
+ "no_order":"2013051500005",  
+ "oid_paybill":"2013051613121201",  
+ "money_order":"200.01",     
+ "result_pay":"SUCCESS",       
+ "settle_date":"20130627", 
+ "sign_type ":"RSA", 
+ "sign":"ZPZULntRpJwFmGNIVKwjLEF2Tze7bqs60rxQ22CqT5J1UlvGo575QK9z/+p+7E9cOoRoWzqR6xHZ6WVv3dloyGKDR0btvrdqPgUAoeaX/YOWzTh00vwcQ+HBtXE+vP TfAqjCTxiiSJEOY7ATCF1q7iP3sfQxhS0nDUug1LP3OLk=" } 
+```
+
+```html
+{
+"dt_order": "20180412184756",
+"info_order": "提现付款_通用失败",
+"money_order": "363.0",
+"no_order": "61021152353007617824",
+"oid_partner": "2018*********20003",
+"oid_paybill": "2018041264987426",
+"result_pay": "FAILURE",
+"sign": "CgdRcJK9YMQt93fETTMc3jV1vX7a4m1FWbH6+s6ZBMy2e3N4r5NxtbN/5+ovrigMEizgyAMot+Pmm0PV/71nKzw8rcihoT+pk7Su4PAmC9I22FCNKYVHSKVqHeb3CTj8mzGHv/1em8p+ursqzyOG7aL7ptuFHuNpuRTQsbxSc4A=",
+"sign_type": "RSA"
+}
+```
+
+###### 回调地址响应参数列表
+
+其中 ret_code “0000”为通知成功，通知成功则停止通知，否则继续通知，直到通知机制完成。 
+
+|参数名称|参数编码|是否必须|字段长度|描述和样例|
+|:---|:---|:---|:---|:---|
+|交易结果代码|ret_code|是|String(4)|0000 （查询成功）.|
+|交易结果描述|ret_msg|是|String(100)|交易成功|
+
+###### 响应示例
+```html
+{   
+ "ret_code":"0000", 
+ "ret_msg":"交易成功" 
+} 
 ```
